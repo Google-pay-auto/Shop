@@ -24,18 +24,18 @@ from flask import Flask, jsonify, request, send_from_directory
 
 BRAND_NAME = "متجر التوكنز"
 
-TELEGRAM_BOT_TOKEN = "ضع_توكن_البوت_هون"
-ADMIN_CHAT_ID = "ضع_رقم_الشات_تبعك_هون"
+TELEGRAM_BOT_TOKEN = "8868682615:AAEdr1RY9bToUKz2KuWIstIJH-MK8_YYhpk"
+ADMIN_CHAT_ID = "5437487652"
 ADMIN_USER_ID = ""  # اختياري
 
 # بيانات شام كاش
 SHAM_CASH_NUMBER = "6bf82cecf71637705f0cf2f728da48e4"
-SHAM_CASH_NAME = "اسمك الظاهر على شام كاش"
+SHAM_CASH_NAME = "ريه الديوان"
 SHAM_BARCODE_IMAGE = "assets/sham_barcode.png"  # حط الصورة الحقيقية بهاد المسار
 
 # بيانات سيريتل كاش
-SYRIATEL_CASH_NUMBER = "0988888888"
-SYRIATEL_CASH_NAME = "اسمك الظاهر على سيريتل كاش"
+SYRIATEL_CASH_NUMBER = "49188726"
+SYRIATEL_CASH_NAME = " "
 
 # سعر صرف الدولار مقابل الليرة السورية — عدّله وقت ما بدك
 EXCHANGE_RATE_USD_TO_SYP = 15000
