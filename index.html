@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>متجر التوكنز</title>
+<style>
+@import url("https://fonts.googleapis.com/css2?family=Cairo:wght@600;700;800&family=Tajawal:wght@400;500;700&family=JetBrains+Mono:wght@500&display=swap");
+
+:root{
+  --bg: #0b0e1a;
+  --surface: #161a2c;
+  --surface-2: #1d2238;
+  --border: #2a2f47;
+  --gold: #f2b705;
+  --gold-dim: #c99a06;
+  --green: #22c55e;
+  --green-dim: #16a34a;
+  --red: #ff5566;
+  --text: #f5f3ee;
+  --text-muted: #8d93ad;
+  --radius: 16px;
+}
+
+*{ box-sizing: border-box; }
+html, body{ margin:0; padding:0; background: var(--bg); color: var(--text); font-family:"Tajawal", sans-serif; direction: rtl; min-height:100vh; }
+body{ display:flex; flex-direction:column; align-items:center; padding: 0 0 60px; }
+h1,h2,h3{ font-family:"Cairo", sans-serif; margin:0; }
+
+.screen{ display:none; width:100%; }
+.screen.active{ display:block; }
+
+/* الهيدر */
+.header{
+  width:100%; display:flex; align-items:center; gap:14px;
+  padding: 16px 20px; border-bottom:1px solid var(--border);
+  margin-bottom: 22px;
+}
+.header .menu-icon{ font-size:22px; color: var(--text-muted); }
+.header .dot{ width:8px; height:8px; border-radius:50%; background:#7c6bff; }
+.header .brand{ font-family:"Cairo", sans-serif; font-weight:800; font-size:22px; color: var(--gold); }
+
+.content{ width:100%; max-width:520px; padding: 0 18px; }
+
+.page-title-row{ display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; }
+.page-title{ font-family:"Cairo", sans-serif; font-weight:800; font-size:22px; }
+.page-note{ color: var(--red); font-size:12.5px; }
+
+/* شبكة الباقات */
+.pkg-grid{ display:grid; grid-template-columns: 1fr 1fr; gap:14px; margin-bottom: 20px; }
+.pkg-card{
+  background: var(--surface); border:1px solid var(--border); border-radius: var(--radius);
+  padding: 20px 14px 16px; display:flex; flex-direction:column; align-items:center; text-align:center;
+  position:relative;
+}
+.coin-badge{
+  width:76px; height:76px; border-radius:50%;
+  background: radial-gradient(circle at 35% 30%, #ffe27a, var(--gold) 55%, var(--gold-dim) 100%);
+  display:flex; align-items:center; justify-content:center;
+  font-family:"Cairo", sans-serif; font-weight:800; font-size:30px; color:#3a2a00;
+  box-shadow: inset 0 -4px 8px rgba(0,0,0,.25);
+  margin-bottom: 14px;
+}
+.pkg-name{ font-family:"Cairo", sans-serif; font-weight:700; font-size:16px; margin-bottom:10px; }
+.pkg-tokens{
+  display:flex; align-items:center; gap:6px; justify-content:center;
+  color: var(--gold); font-family:"JetBrains Mono", monospace; font-weight:600; font-size:16px;
+  margin-bottom:16px;
+}
+.pkg-tokens .mini-coin{
+  width:18px; height:18px; border-radius:50%; background: var(--gold);
+  display:inline-flex; align-items:center; justify-content:center; font-size:11px; color:#3a2a00; font-weight:800;
+}
+.pkg-buy-btn{
+  width:100%; border:none; border-radius:12px; padding:13px;
+  background: linear-gradient(160deg, var(--green), var(--green-dim));
+  color:#062b12; font-family:"Cairo", sans-serif; font-weight:800; font-size:16px; cursor:pointer;
+}
+.pkg-buy-btn:active{ transform: scale(.98); }
+
+/* شبكة طرق الدفع */
+.method-grid{ display:grid; grid-template-columns: 1fr 1fr; gap:14px; margin-bottom:20px; }
+.method-card{
+  background: var(--surface); border:1px solid var(--border); border-radius: var(--radius);
+  padding:22px 14px; display:flex; flex-direction:column; align-items:center; gap:10px;
+  cursor:pointer; font-family:"Cairo", sans-serif; font-weight:700; font-size:15px; color: var(--text);
+  transition: border-color .15s ease, transform .15s ease;
+}
+.method-card:hover{ transform: translateY(-2px); border-color: var(--gold-dim); }
+.method-card .icon{ font-size:26px; }
+.method-card.disabled{ opacity:.45; cursor:not-allowed; }
+.method-card.disabled:hover{ transform:none; border-color: var(--border); }
+.soon-tag{ font-size:11px; color: var(--text-muted); font-family:"Tajawal", sans-serif; font-weight:400; }
+
+/* صفحة تفاصيل الدفع */
+.panel{ background: var(--surface); border:1px solid var(--border); border-radius: var(--radius); padding:22px; margin-bottom:18px; }
+
+.barcode-box{ background:#fff; border-radius:12px; padding:12px; width:150px; height:150px; margin:0 auto 14px; display:flex; align-items:center; justify-content:center; }
+.barcode-box svg, .barcode-box img{ width:100%; height:100%; object-fit:contain; }
+
+.pay-account-name{ text-align:center; font-family:"Cairo", sans-serif; font-weight:700; font-size:15px; color: var(--gold); margin-bottom:4px; }
+.pay-number-label{ text-align:center; color: var(--text-muted); font-size:13px; margin-bottom:6px; }
+.pay-number-row{ display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:18px; }
+.pay-number{ font-family:"JetBrains Mono", monospace; font-size:22px; font-weight:600; letter-spacing:1px; direction:ltr; }
+.copy-btn{ background: var(--surface-2); border:1px solid var(--border); color: var(--gold); border-radius:8px; padding:5px 12px; font-size:12px; cursor:pointer; font-family:"Tajawal", sans-serif; }
+
+.manual-warning{
+  background: rgba(242,183,5,.1); border:1px solid rgba(242,183,5,.35); color: var(--gold);
+  border-radius:10px; padding:10px 14px; font-size:13.5px; text-align:center; margin-bottom:16px;
+}
+
+.amount-due{
+  text-align:center; background: var(--surface-2); border:1px solid var(--border); border-radius:12px;
+  padding:14px; margin-bottom:18px;
+}
+.amount-due .label{ font-size:12.5px; color: var(--text-muted); margin-bottom:4px; }
+.amount-due .value{ font-family:"JetBrains Mono", monospace; font-size:24px; font-weight:700; color: var(--green); direction:ltr; }
+
+.field{ margin-bottom:16px; }
+.field label{ display:block; font-size:14px; color: var(--text-muted); margin-bottom:6px; }
+.field input{ width:100%; background: var(--bg); border:1px solid var(--border); border-radius:10px; padding:13px 14px; color: var(--text); font-family:"Tajawal", sans-serif; font-size:15px; }
+.field input:focus{ outline:2px solid var(--gold-dim); outline-offset:1px; }
+.hint{ font-size:12.5px; color: var(--text-muted); margin-top:6px; line-height:1.6; }
+
+.error-box{ background: rgba(255,85,102,.12); border:1px solid rgba(255,85,102,.4); color: var(--red); border-radius:10px; padding:12px 14px; font-size:14px; margin-bottom:16px; display:none; }
+
+.btn{ width:100%; border:none; border-radius:14px; padding:16px; font-family:"Cairo", sans-serif; font-weight:700; font-size:16px; cursor:pointer; transition: filter .15s ease, transform .15s ease; }
+.btn:active{ transform: scale(.98); }
+.btn:disabled{ opacity:.5; cursor:not-allowed; }
+.btn-primary{ background: linear-gradient(135deg, var(--gold), var(--gold-dim)); color:#1a1200; }
+.btn-primary:hover{ filter: brightness(1.07); }
+.btn-ghost{ background: transparent; border:1px solid var(--border); color: var(--text); margin-top:10px; }
+
+.status-ring{ width:88px; height:88px; border-radius:50%; border:4px solid var(--border); border-top-color: var(--gold); margin: 10px auto 24px; animation: spin 1s linear infinite; }
+@keyframes spin{ to{ transform: rotate(360deg); } }
+.status-ring.done{ animation:none; border-color: var(--green); display:flex; align-items:center; justify-content:center; font-size:36px; }
+.status-ring.failed{ animation:none; border-color: var(--red); display:flex; align-items:center; justify-content:center; font-size:36px; }
+
+.center{ text-align:center; }
+.order-id{ font-family:"JetBrains Mono", monospace; color: var(--text-muted); font-size:13px; direction:ltr; display:inline-block; margin-top:6px; }
+
+@media (prefers-reduced-motion: reduce){ .status-ring{ animation:none; } .pkg-card, .method-card{ transition:none; } }
+</style>
+</head>
+<body>
+
+  <div class="header">
+    <span class="menu-icon">☰</span>
+    <span class="dot"></span>
+    <span class="brand" id="brandName">متجر التوكنز</span>
+  </div>
+
+  <div class="content">
+
+    <!-- الشاشة ١: الباقات -->
+    <section class="screen active" id="screen-packages">
+      <div class="page-title-row">
+        <div class="page-title">توكنز</div>
+        <div class="page-note">جميع الفئات لا تتضمن نقاط VIP</div>
+      </div>
+      <div class="pkg-grid" id="pkgGrid"></div>
+      <div class="error-box" id="errorBox0"></div>
+    </section>
+
+    <!-- الشاشة ٢: اختيار طريقة الدفع -->
+    <section class="screen" id="screen-methods">
+      <div class="page-title-row"><div class="page-title">اختر طريقة الدفع</div></div>
+      <p class="hint" id="methodSubtitle" style="margin-bottom:18px;"></p>
+      <div class="method-grid">
+        <div class="method-card" data-method="sham_usd"><span class="icon">💳</span> Sham Cash <span class="soon-tag">USD</span></div>
+        <div class="method-card" data-method="sham_syp"><span class="icon">💳</span> Sham Cash <span class="soon-tag">SYP</span></div>
+        <div class="method-card" data-method="syriatel"><span class="icon">📱</span> Syriatel Cash</div>
+        <div class="method-card disabled" id="binanceCard"><span class="icon">🟡</span> Binance <span class="soon-tag">قريبًا</span></div>
+      </div>
+      <button class="btn btn-ghost" id="backBtn0">رجوع</button>
+    </section>
+
+    <!-- الشاشة ٣: تفاصيل الدفع -->
+    <section class="screen" id="screen-payment">
+      <div class="page-title-row"><div class="page-title" id="payTitle">الدفع</div></div>
+
+      <div class="panel" id="payDetailsPanel"></div>
+
+      <div class="panel">
+        <div class="amount-due">
+          <div class="label">المبلغ المطلوب دفعه</div>
+          <div class="value" id="amountDueText"></div>
+        </div>
+
+        <div class="field">
+          <label>رمز العملية</label>
+          <input type="text" id="txCodeInput" placeholder="مثال: 837456123" />
+          <div class="hint">تجده برسالة التأكيد بعد إتمام التحويل مباشرة.</div>
+        </div>
+
+        <div class="error-box" id="errorBox2"></div>
+        <button class="btn btn-primary" id="submitBtn">تأكيد الدفع</button>
+        <button class="btn btn-ghost" id="backBtn1">رجوع</button>
+      </div>
+    </section>
+
+    <!-- الشاشة ٤: بانتظار الموافقة -->
+    <section class="screen" id="screen-pending">
+      <div class="panel center">
+        <div class="status-ring" id="ring"></div>
+        <h2 id="statusTitle">يرجى الانتظار للتحقق من العملية</h2>
+        <p class="hint" id="statusText" style="margin-top:10px;">جاري التحقق من رمز العملية، هذا عادة بياخد بضع دقائق.</p>
+        <div class="order-id" id="orderIdText"></div>
+      </div>
+      <div class="error-box" id="errorBox3"></div>
+      <button class="btn btn-ghost" id="homeBtn1">العودة للرئيسية</button>
+    </section>
+
+    <!-- الشاشة ٥: إدخال رقم اللاعب -->
+    <section class="screen" id="screen-player">
+      <div class="page-title-row"><div class="page-title">إدخال رقم اللاعب</div></div>
+      <div class="panel" id="playerFormPanel">
+        <div class="field">
+          <label>رقم اللاعب</label>
+          <input type="text" id="playerIdInput" placeholder="مثال: 123456789" />
+        </div>
+        <div class="error-box" id="errorBox4"></div>
+        <button class="btn btn-primary" id="confirmBtn">تأكيد</button>
+      </div>
+      <div class="panel center" id="successPanel" style="display:none;">
+        <div class="status-ring done">✓</div>
+        <h2>تم التأكيد</h2>
+        <p class="hint" style="margin-top:10px;">سيتم شحن التوكنز لحسابك خلال وقت قصير.</p>
+        <button class="btn btn-ghost" id="homeBtn2">العودة للرئيسية</button>
+      </div>
+    </section>
+
+  </div>
+
+<script>
+let config = null;
+let selectedPackage = null;
+let selectedMethod = null;
+let currentOrderId = localStorage.getItem("currentOrderId") || null;
+let pollTimer = null;
+
+function formatNumber(n){ return new Intl.NumberFormat("en-US").format(n); }
+function showScreen(id){
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+}
+function showError(boxId, msg){ const b=document.getElementById(boxId); b.textContent=msg; b.style.display="block"; }
+function hideError(boxId){ document.getElementById(boxId).style.display="none"; }
+
+async function apiGet(url){
+  const res = await fetch(url);
+  const data = await res.json();
+  if(!res.ok) throw new Error(data.error || "خطأ بالطلب");
+  return data;
+}
+async function apiPost(url, body){
+  const res = await fetch(url, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(body) });
+  const data = await res.json();
+  if(!res.ok) throw new Error(data.error || "خطأ بالطلب");
+  return data;
+}
+
+const BARCODE_SVG_PLACEHOLDER = `
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <rect width="200" height="200" fill="#ffffff"/>
+  <g fill="#111111">
+    <rect x="20" y="20" width="4" height="120"/><rect x="28" y="20" width="2" height="120"/>
+    <rect x="34" y="20" width="6" height="120"/><rect x="44" y="20" width="2" height="120"/>
+    <rect x="50" y="20" width="4" height="120"/><rect x="58" y="20" width="2" height="120"/>
+    <rect x="64" y="20" width="8" height="120"/><rect x="76" y="20" width="2" height="120"/>
+    <rect x="82" y="20" width="4" height="120"/><rect x="90" y="20" width="6" height="120"/>
+    <rect x="100" y="20" width="2" height="120"/><rect x="106" y="20" width="4" height="120"/>
+    <rect x="114" y="20" width="2" height="120"/><rect x="120" y="20" width="8" height="120"/>
+    <rect x="132" y="20" width="4" height="120"/><rect x="140" y="20" width="2" height="120"/>
+    <rect x="146" y="20" width="6" height="120"/><rect x="156" y="20" width="2" height="120"/>
+    <rect x="162" y="20" width="4" height="120"/><rect x="170" y="20" width="8" height="120"/>
+  </g>
+  <text x="100" y="160" font-family="monospace" font-size="10" fill="#555" text-anchor="middle">ضع صورة الباركود الحقيقية</text>
+</svg>`;
+
+// ============================== الشاشة ١: الباقات ==============================
+function renderPackages(){
+  document.getElementById("brandName").textContent = config.brand;
+  const grid = document.getElementById("pkgGrid");
+  grid.innerHTML = "";
+  config.packages.forEach(pkg => {
+    const card = document.createElement("div");
+    card.className = "pkg-card";
+    card.innerHTML = `
+      <div class="coin-badge">$</div>
+      <div class="pkg-name">${pkg.name}</div>
+      <div class="pkg-tokens"><span class="mini-coin">$</span> ${formatNumber(pkg.tokens)}</div>
+      <button class="pkg-buy-btn">$${pkg.usd_price}</button>
+    `;
+    card.querySelector(".pkg-buy-btn").addEventListener("click", () => {
+      selectedPackage = pkg;
+      openMethodsScreen();
+    });
+    grid.appendChild(card);
+  });
+}
+
+// ============================== الشاشة ٢: طرق الدفع ==============================
+function openMethodsScreen(){
+  document.getElementById("methodSubtitle").textContent =
+    `الباقة المختارة: ${selectedPackage.name} — ${formatNumber(selectedPackage.tokens)} توكن — $${selectedPackage.usd_price}`;
+  showScreen("screen-methods");
+}
+
+document.querySelectorAll(".method-card:not(.disabled)").forEach(card => {
+  card.addEventListener("click", () => {
+    selectedMethod = card.dataset.method;
+    openPaymentScreen();
+  });
+});
+document.getElementById("backBtn0").addEventListener("click", () => showScreen("screen-packages"));
+
+// ============================== الشاشة ٣: تفاصيل الدفع ==============================
+function computeAmountText(pkg, method){
+  if(method === "sham_usd"){
+    return `${pkg.usd_price}$`;
+  }
+  const syp = pkg.usd_price * config.exchangeRate;
+  return `${formatNumber(syp)} SYP`;
+}
+
+function openPaymentScreen(){
+  hideError("errorBox2");
+  document.getElementById("txCodeInput").value = "";
+
+  const titles = { sham_usd:"Sham Cash (USD)", sham_syp:"Sham Cash (SYP)", syriatel:"Syriatel Cash" };
+  document.getElementById("payTitle").textContent = titles[selectedMethod];
+  document.getElementById("amountDueText").textContent = computeAmountText(selectedPackage, selectedMethod);
+
+  const panel = document.getElementById("payDetailsPanel");
+  if(selectedMethod === "sham_usd" || selectedMethod === "sham_syp"){
+    panel.innerHTML = `
+      <div class="barcode-box">
+        ${config.shamBarcodeImage ? `<img src="/${config.shamBarcodeImage}" onerror="this.parentElement.innerHTML='${BARCODE_SVG_PLACEHOLDER.replace(/'/g,"\\'")}'" />` : BARCODE_SVG_PLACEHOLDER}
+      </div>
+      <div class="pay-account-name">${config.shamCashName}</div>
+      <div class="pay-number-label">رقم شام كاش</div>
+      <div class="pay-number-row">
+        <span class="pay-number" id="numText">${config.shamCashNumber}</span>
+        <button class="copy-btn" id="copyBtn">نسخ</button>
+      </div>
+    `;
+  } else if(selectedMethod === "syriatel"){
+    panel.innerHTML = `
+      <div class="manual-warning">يرجى استخدام الدفع اليدوي حصرًا</div>
+      <div class="pay-account-name">${config.syriatelCashName}</div>
+      <div class="pay-number-label">رقم سيريتل كاش</div>
+      <div class="pay-number-row">
+        <span class="pay-number" id="numText">${config.syriatelCashNumber}</span>
+        <button class="copy-btn" id="copyBtn">نسخ</button>
+      </div>
+    `;
+  }
+
+  document.getElementById("copyBtn").addEventListener("click", () => {
+    navigator.clipboard.writeText(document.getElementById("numText").textContent.trim());
+    const b = document.getElementById("copyBtn");
+    b.textContent = "تم النسخ ✓";
+    setTimeout(() => b.textContent = "نسخ", 1500);
+  });
+
+  showScreen("screen-payment");
+}
+
+document.getElementById("backBtn1").addEventListener("click", () => showScreen("screen-methods"));
+
+document.getElementById("submitBtn").addEventListener("click", async () => {
+  hideError("errorBox2");
+  const txCode = document.getElementById("txCodeInput").value.trim();
+  if(!txCode){ showError("errorBox2", "الرجاء إدخال رمز العملية."); return; }
+
+  const btn = document.getElementById("submitBtn");
+  btn.disabled = true; btn.textContent = "جارٍ الإرسال...";
+
+  try{
+    const result = await apiPost("/api/orders", {
+      packageId: selectedPackage.id,
+      method: selectedMethod,
+      txCode,
+    });
+    currentOrderId = result.orderId;
+    localStorage.setItem("currentOrderId", currentOrderId);
+    openPendingScreen();
+  }catch(e){
+    showError("errorBox2", e.message || "حدث خطأ، حاول مرة أخرى.");
+  }finally{
+    btn.disabled = false; btn.textContent = "تأكيد الدفع";
+  }
+});
+
+// ============================== الشاشة ٤: الانتظار ==============================
+function openPendingScreen(){
+  hideError("errorBox3");
+  document.getElementById("orderIdText").textContent = `رقم الطلب: ${currentOrderId}`;
+  showScreen("screen-pending");
+  renderPendingStatus({ status: "pending" });
+  clearInterval(pollTimer);
+  pollOrderStatus();
+  pollTimer = setInterval(pollOrderStatus, 4000);
+}
+
+function renderPendingStatus(order){
+  const ring = document.getElementById("ring");
+  const title = document.getElementById("statusTitle");
+  const text = document.getElementById("statusText");
+
+  if(order.status === "pending"){
+    ring.className = "status-ring"; ring.textContent = "";
+    title.textContent = "يرجى الانتظار للتحقق من العملية";
+    text.textContent = "جاري التحقق من رمز العملية، هذا عادة بياخد بضع دقائق.";
+  } else if(order.status === "approved"){
+    ring.className = "status-ring done"; ring.textContent = "✓";
+    title.textContent = "تمت الموافقة على الطلب";
+    text.textContent = "جاري تحويلك لإدخال رقم اللاعب...";
+    clearInterval(pollTimer);
+    setTimeout(openPlayerScreen, 1000);
+  } else if(order.status === "rejected"){
+    ring.className = "status-ring failed"; ring.textContent = "✕";
+    title.textContent = "لا توجد عملية بالرقم المحدد";
+    text.textContent = "تأكد من رمز العملية وحاول مرة أخرى، أو تواصل معنا.";
+    clearInterval(pollTimer);
+  } else if(order.status === "delivered"){
+    ring.className = "status-ring done"; ring.textContent = "✓";
+    title.textContent = "تم شحن التوكنز";
+    text.textContent = "تم تسليم طلبك مسبقًا.";
+    clearInterval(pollTimer);
+  }
+}
+
+async function pollOrderStatus(){
+  try{
+    const order = await apiGet(`/api/orders/${currentOrderId}`);
+    renderPendingStatus(order);
+  }catch(e){
+    showError("errorBox3", "تعذر العثور على الطلب.");
+    clearInterval(pollTimer);
+  }
+}
+
+document.getElementById("homeBtn1").addEventListener("click", resetToHome);
+document.getElementById("homeBtn2").addEventListener("click", resetToHome);
+
+function resetToHome(){
+  clearInterval(pollTimer);
+  currentOrderId = null;
+  localStorage.removeItem("currentOrderId");
+  selectedPackage = null; selectedMethod = null;
+  showScreen("screen-packages");
+}
+
+// ============================== الشاشة ٥: رقم اللاعب ==============================
+function openPlayerScreen(){
+  hideError("errorBox4");
+  document.getElementById("playerFormPanel").style.display = "block";
+  document.getElementById("successPanel").style.display = "none";
+  document.getElementById("playerIdInput").value = "";
+  showScreen("screen-player");
+}
+
+document.getElementById("confirmBtn").addEventListener("click", async () => {
+  hideError("errorBox4");
+  const playerId = document.getElementById("playerIdInput").value.trim();
+  if(!playerId){ showError("errorBox4", "الرجاء إدخال رقم اللاعب."); return; }
+
+  const btn = document.getElementById("confirmBtn");
+  btn.disabled = true; btn.textContent = "جارٍ الإرسال...";
+
+  try{
+    await apiPost(`/api/orders/${currentOrderId}/confirm`, { playerId });
+    document.getElementById("playerFormPanel").style.display = "none";
+    document.getElementById("successPanel").style.display = "block";
+    localStorage.removeItem("currentOrderId");
+  }catch(e){
+    showError("errorBox4", e.message || "حدث خطأ، حاول مرة أخرى.");
+  }finally{
+    btn.disabled = false; btn.textContent = "تأكيد";
+  }
+});
+
+// ============================== بدء التشغيل ==============================
+async function init(){
+  try{
+    config = await apiGet("/api/config");
+  }catch(e){
+    showError("errorBox0", "تعذر تحميل البيانات. تأكد أن السيرفر (bot.py) شغّال.");
+    return;
+  }
+
+  renderPackages();
+
+  if(currentOrderId){
+    try{
+      const order = await apiGet(`/api/orders/${currentOrderId}`);
+      if(order.status === "pending"){ openPendingScreen(); }
+      else if(order.status === "approved"){ openPlayerScreen(); }
+      else if(order.status === "delivered"){
+        openPlayerScreen();
+        document.getElementById("playerFormPanel").style.display = "none";
+        document.getElementById("successPanel").style.display = "block";
+      } else { resetToHome(); }
+    }catch(e){ resetToHome(); }
+  }
+}
+
+init();
+</script>
+</body>
+</html>
