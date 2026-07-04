@@ -100,8 +100,8 @@ h1,h2,h3{ font-family:"Cairo", sans-serif; margin:0; }
 
 .pay-account-name{ text-align:center; font-family:"Cairo", sans-serif; font-weight:700; font-size:15px; color: var(--gold); margin-bottom:4px; }
 .pay-number-label{ text-align:center; color: var(--text-muted); font-size:13px; margin-bottom:6px; }
-.pay-number-row{ display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:18px; }
-.pay-number{ font-family:"JetBrains Mono", monospace; font-size:22px; font-weight:600; letter-spacing:1px; direction:ltr; }
+.pay-number-row{ display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:18px; flex-wrap:wrap; padding:0 6px; }
+.pay-number{ font-family:"JetBrains Mono", monospace; font-size:15px; font-weight:600; letter-spacing:.3px; direction:ltr; word-break:break-all; overflow-wrap:anywhere; text-align:center; max-width:100%; line-height:1.5; }
 .copy-btn{ background: var(--surface-2); border:1px solid var(--border); color: var(--gold); border-radius:8px; padding:5px 12px; font-size:12px; cursor:pointer; font-family:"Tajawal", sans-serif; }
 
 .manual-warning{
@@ -119,6 +119,7 @@ h1,h2,h3{ font-family:"Cairo", sans-serif; margin:0; }
 .field{ margin-bottom:16px; }
 .field label{ display:block; font-size:14px; color: var(--text-muted); margin-bottom:6px; }
 .field input{ width:100%; background: var(--bg); border:1px solid var(--border); border-radius:10px; padding:13px 14px; color: var(--text); font-family:"Tajawal", sans-serif; font-size:15px; }
+.field input.numeric-input{ direction:ltr; text-align:right; font-family:"JetBrains Mono", monospace; letter-spacing:.5px; }
 .field input:focus{ outline:2px solid var(--gold-dim); outline-offset:1px; }
 .hint{ font-size:12.5px; color: var(--text-muted); margin-top:6px; line-height:1.6; }
 
@@ -189,7 +190,7 @@ h1,h2,h3{ font-family:"Cairo", sans-serif; margin:0; }
 
         <div class="field">
           <label>رمز العملية</label>
-          <input type="text" id="txCodeInput" placeholder="مثال: 837456123" />
+          <input type="text" id="txCodeInput" class="numeric-input" inputmode="numeric" pattern="[0-9]*" placeholder="مثال: 837456123" />
           <div class="hint">تجده برسالة التأكيد بعد إتمام التحويل مباشرة.</div>
         </div>
 
@@ -217,7 +218,7 @@ h1,h2,h3{ font-family:"Cairo", sans-serif; margin:0; }
       <div class="panel" id="playerFormPanel">
         <div class="field">
           <label>رقم اللاعب</label>
-          <input type="text" id="playerIdInput" placeholder="مثال: 123456789" />
+          <input type="text" id="playerIdInput" class="numeric-input" inputmode="numeric" placeholder="مثال: 123456789" />
         </div>
         <div class="error-box" id="errorBox4"></div>
         <button class="btn btn-primary" id="confirmBtn">تأكيد</button>
@@ -320,7 +321,7 @@ function computeAmountText(pkg, method){
   if(method === "sham_usd"){
     return `${pkg.usd_price}$`;
   }
-  const syp = pkg.usd_price * config.exchangeRate;
+  const syp = (pkg.usd_price * config.exchangeRate) / 100;
   return `${formatNumber(syp)} SYP`;
 }
 
@@ -368,6 +369,10 @@ function openPaymentScreen(){
 }
 
 document.getElementById("backBtn1").addEventListener("click", () => showScreen("screen-methods"));
+
+document.getElementById("txCodeInput").addEventListener("input", (e) => {
+  e.target.value = e.target.value.replace(/[^0-9]/g, "");
+});
 
 document.getElementById("submitBtn").addEventListener("click", async () => {
   hideError("errorBox2");
