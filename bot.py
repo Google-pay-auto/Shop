@@ -22,7 +22,7 @@ from flask import Flask, jsonify, request, send_from_directory
 
 # ============================== الإعدادات ==============================
 
-BRAND_NAME = "متجر التوكنز"
+BRAND_NAME = "Jawaker Store"
 
 TELEGRAM_BOT_TOKEN = "8868682615:AAEdr1RY9bToUKz2KuWIstIJH-MK8_YYhpk"
 ADMIN_CHAT_ID = "5437487652"
@@ -35,10 +35,10 @@ SHAM_BARCODE_IMAGE = "assets/sham_barcode.png"  # حط الصورة الحقيق
 
 # بيانات سيريتل كاش
 SYRIATEL_CASH_NUMBER = "49188726"
-SYRIATEL_CASH_NAME = " "
+SYRIATEL_CASH_NAME = ""
 
 # سعر صرف الدولار مقابل الليرة السورية — عدّله وقت ما بدك
-EXCHANGE_RATE_USD_TO_SYP = 15000
+EXCHANGE_RATE_USD_TO_SYP = 13200
 
 PORT = 5000
 
