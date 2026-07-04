@@ -24,21 +24,21 @@ from flask import Flask, jsonify, request, send_from_directory
 
 BRAND_NAME = "متجر التوكنز"
 
-TELEGRAM_BOT_TOKEN = "8868682615:AAEdr1RY9bToUKz2KuWIstIJH-MK8_YYhpk"
-ADMIN_CHAT_ID = "5437487652"
+TELEGRAM_BOT_TOKEN = "ضع_توكن_البوت_هون"
+ADMIN_CHAT_ID = "ضع_رقم_الشات_تبعك_هون"
 ADMIN_USER_ID = ""  # اختياري
 
 # بيانات شام كاش
 SHAM_CASH_NUMBER = "6bf82cecf71637705f0cf2f728da48e4"
-SHAM_CASH_NAME = "ريه الديوان"
+SHAM_CASH_NAME = "اسمك الظاهر على شام كاش"
 SHAM_BARCODE_IMAGE = "assets/sham_barcode.png"  # حط الصورة الحقيقية بهاد المسار
 
 # بيانات سيريتل كاش
-SYRIATEL_CASH_NUMBER = "49188726"
-SYRIATEL_CASH_NAME = ""  
+SYRIATEL_CASH_NUMBER = "0988888888"
+SYRIATEL_CASH_NAME = "اسمك الظاهر على سيريتل كاش"
 
 # سعر صرف الدولار مقابل الليرة السورية — عدّله وقت ما بدك
-EXCHANGE_RATE_USD_TO_SYP = 13000
+EXCHANGE_RATE_USD_TO_SYP = 15000
 
 PORT = 5000
 
@@ -48,6 +48,8 @@ PACKAGES = [
     {"id": "p2", "name": "الفئة الثانية", "tokens": 270000, "usd_price": 20},
     {"id": "p3", "name": "الفئة الثالثة", "tokens": 420000, "usd_price": 30},
     {"id": "p4", "name": "الفئة الرابعة", "tokens": 850000, "usd_price": 60},
+    {"id": "p5", "name": "الفئة الخامسة", "tokens": 1300000, "usd_price": 100},
+    {"id": "p6", "name": "الفئة السادسة", "tokens": 2800000, "usd_price": 200},
 ]
 
 # =========================================================================
@@ -290,6 +292,10 @@ def api_create_order():
     if not all([package_id, method, tx_code]):
         return jsonify({"error": "الحقول المطلوبة ناقصة"}), 400
 
+    tx_code = str(tx_code).strip()
+    if not tx_code.isdigit():
+        return jsonify({"error": "رمز العملية يجب أن يتكون من أرقام فقط"}), 400
+
     if method not in ("sham_usd", "sham_syp", "syriatel", "binance"):
         return jsonify({"error": "طريقة دفع غير مدعومة"}), 400
 
@@ -304,8 +310,8 @@ def api_create_order():
     if method == "sham_usd":
         amount_text = f"{pkg['usd_price']}$"
     else:  # sham_syp أو syriatel
-        amount_syp = pkg["usd_price"] * EXCHANGE_RATE_USD_TO_SYP
-        amount_text = f"{amount_syp:,} SYP".replace(",", ",")
+        amount_syp = pkg["usd_price"] * EXCHANGE_RATE_USD_TO_SYP / 100
+        amount_text = f"{amount_syp:,.0f} SYP"
 
     order = {
         "id": uuid.uuid4().hex[:10],
@@ -366,7 +372,15 @@ def api_confirm(order_id):
 
 # --------------------------------- تشغيل ---------------------------------
 
-if __name__ == "__main__":
+def start_telegram_polling_once():
+    """يشغّل خيط استطلاع تلجرام مرة واحدة، سواء تم تشغيل الملف مباشرة (python bot.py)
+    أو استيراده عبر gunicorn (كما يحصل على Render)."""
+    tg_call("deleteWebhook", {})  # يمنع تعارض لو كان في ويبهوك قديم متفعّل
     threading.Thread(target=telegram_polling_loop, daemon=True).start()
+
+
+start_telegram_polling_once()
+
+if __name__ == "__main__":
     print(f"✅ الموقع يعمل الآن على http://localhost:{PORT}")
     app.run(host="0.0.0.0", port=PORT, debug=False)
