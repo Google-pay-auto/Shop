@@ -24,12 +24,12 @@ from flask import Flask, jsonify, request, send_from_directory
 
 BRAND_NAME = "Jawaker Store"
 
-TELEGRAM_BOT_TOKEN = "4493e9c98bd3c15ca60f879d3d204227"
+TELEGRAM_BOT_TOKEN = "8868682615:AAEdr1RY9bToUKz2KuWIstIJH-MK8_YYhpk"
 ADMIN_CHAT_ID = "5437487652"
 ADMIN_USER_ID = ""  # اختياري
 
 # بيانات شام كاش
-SHAM_CASH_NUMBER = "6bf82cecf71637705f0cf2f728da48e4"
+SHAM_CASH_NUMBER = "4493e9c98bd3c15ca60f879d3d204227"
 SHAM_CASH_NAME = "عفاف ماوردي"
 SHAM_BARCODE_IMAGE = "assets/sham_barcode.png"  # حط الصورة الحقيقية بهاد المسار
 
